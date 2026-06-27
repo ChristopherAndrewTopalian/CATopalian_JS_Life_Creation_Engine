@@ -3,6 +3,8 @@ This JavaScript app teaches incrementally how to simulate life with motion.
 
 ---
 
+Video: https://www.youtube.com/watch?v=9iRyMfAELAE
+
 ![001](src/media/textures/screenshots/001.png)
 
 ![002](src/media/textures/screenshots/002.png)
