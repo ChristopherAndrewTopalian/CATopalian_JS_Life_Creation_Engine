@@ -1,0 +1,172 @@
+<!-- Dedicated to God the Father -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Life_Creation_Engine.html -->
+
+<!DOCTYPE html>
+<html lang = 'en'>
+<head>
+<title> CATopalian JS Life Creation Engine </title>
+
+<meta charset = 'UTF-8'>
+
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+canvas
+{
+    border: 2px solid white;
+    display: block;
+    margin: 5px auto;
+    background-color: black;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id = "gameCanvas" width="600" height = "400"></canvas>
+
+<script>
+
+// shortcuts.js
+
+function ge(whichId)
+{
+    let result = document.getElementById(whichId);
+    return result;
+}
+
+function ce(whichType)
+{
+    let result = document.createElement(whichType);
+    return result;
+}
+
+function ba(whichElement)
+{
+    let result = document.body.append(whichElement);
+    return result;
+}
+
+function cl(whichMessage)
+{
+    let result = console.log(whichMessage);
+    return result;
+}
+
+//----//
+
+class Cat
+{
+    constructor(name, color, x, y, speed)
+    {
+        this.name = name;
+        this.color = color;
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.size = 30;
+
+        // random initial direction
+        this.dx = (Math.random() - 0.5) * this.speed;
+        this.dy = (Math.random() - 0.5) * this.speed;
+        this.directionTimer = 0;
+    }
+
+    update()
+    {
+        // smooth wandering movement
+        this.x += this.dx;
+        this.y += this.dy;
+
+        // bounce off walls
+        if (this.x < 0 || this.x > 570) this.dx *= -1;
+        if (this.y < 0 || this.y > 370) this.dy *= -1;
+
+        // every ~60 frames, change direction
+        this.directionTimer++;
+        if (this.directionTimer > 60)
+        {
+            this.dx = (Math.random() - 0.5) * this.speed;
+            this.dy = (Math.random() - 0.5) * this.speed;
+            this.directionTimer = 0;
+        }
+    }
+
+    draw(ctx)
+    {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // draw name label
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+        ctx.fillText(this.name, this.x - this.size / 2, this.y - this.size / 2 - 5);
+    }
+}
+
+// setup canvas
+let canvas = document.getElementById("gameCanvas");
+let ctx = canvas.getContext("2d");
+
+// get the pixel ratio of the current display (e.g., 2 for Retina/4K TVs)
+const dpr = window.devicePixelRatio || 1;
+
+// set the actual logical size of the game stage
+const STAGE_WIDTH = window.innerWidth;
+const STAGE_HEIGHT = window.innerHeight;
+
+// scale the canvas memory up to match the physical TV pixels
+canvas.width = STAGE_WIDTH * dpr;
+canvas.height = STAGE_HEIGHT * dpr;
+
+// Use CSS to lock the visual size to the window
+canvas.style.width = STAGE_WIDTH + 'px';
+canvas.style.height = STAGE_HEIGHT + 'px';
+
+// tell the Canvas context to scale all our math up automatically!
+ctx.scale(dpr, dpr);
+
+// create some cats
+let cats = [
+    new Cat("Mittens", "orange", 100, 200, 2),
+    new Cat("Shadow", "gray", 300, 150, 1.5),
+    new Cat("Snowball", "white", 500, 250, 2.5)
+];
+
+function gameLoop()
+{
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < cats.length; i++)
+    {
+        cats[i].update();
+        cats[i].draw(ctx);
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
+</script>
+
+</body>
+
+</html>
+

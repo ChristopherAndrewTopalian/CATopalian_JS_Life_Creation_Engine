@@ -1,0 +1,241 @@
+<!-- Dedicated to God the Father -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Life_Creation_Engine.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title> CATopalian JS Life Creation Engine </title>
+
+<meta charset = 'UTF-8'>
+
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+</style>
+
+<script>
+
+// STATE (Pure Data)
+// No functions, no HTML. Just raw numbers.
+let catsData = [];
+
+// VIEW (Pure UI Nodes)
+// No logic. Just HTML DOM nodes.
+let catsUI = [];
+
+let container;
+
+// Factories
+
+function makeInterface()
+{
+    container = document.createElement("div");
+    container.style.position = "relative";
+    container.style.width = "800px";
+    container.style.height = "600px";
+    container.style.border = "2px solid white";
+    container.style.backgroundColor = "black";
+    document.body.appendChild(container);
+}
+
+function spawnCatData(name, x, y, color)
+{
+    let data = {
+        name: name,
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        color: color,
+        compassion: 10,
+        excitement: 0
+    };
+    catsData.push(data);
+}
+
+function spawnCatUI(name, color)
+{
+    let ui = {};
+
+    // body node
+    ui.circle = document.createElement("div");
+    ui.circle.style.position = "absolute";
+    ui.circle.style.width = "40px";
+    ui.circle.style.height = "40px";
+    ui.circle.style.borderRadius = "50%";
+    ui.circle.style.backgroundColor = color;
+    container.appendChild(ui.circle);
+
+    // name node
+    ui.nameLabel = document.createElement("div");
+    ui.nameLabel.style.position = "absolute";
+    ui.nameLabel.style.color = "white";
+    ui.nameLabel.style.fontFamily = "Arial";
+    ui.nameLabel.style.fontSize = "12px";
+    ui.nameLabel.style.textAlign = "center";
+    ui.nameLabel.style.width = "40px";
+    ui.nameLabel.textContent = name;
+    container.appendChild(ui.nameLabel);
+
+    // compassion bar node
+    ui.compassionBar = document.createElement("div");
+    ui.compassionBar.style.position = "absolute";
+    ui.compassionBar.style.height = "6px";
+    ui.compassionBar.style.backgroundColor = "pink";
+    container.appendChild(ui.compassionBar);
+
+    // excitement bar node
+    ui.excitementBar = document.createElement("div");
+    ui.excitementBar.style.position = "absolute";
+    ui.excitementBar.style.height = "6px";
+    ui.excitementBar.style.backgroundColor = "yellow";
+    container.appendChild(ui.excitementBar);
+
+    catsUI.push(ui);
+}
+
+function createEntity(name, x, y, color)
+{
+    // The data array and UI array are kept parallel
+    spawnCatData(name, x, y, color);
+    spawnCatUI(name, color);
+}
+
+// SYSTEMS (Pure Logic)
+// Functions that process the data arrays.
+function physicsSystem()
+{
+    let len = catsData.length;
+
+    // Phase 1: Swarm Interactions
+    for (let i = 0; i < len; i++)
+    {
+        for (let j = i + 1; j < len; j++)
+        {
+            let a = catsData[i];
+            let b = catsData[j];
+
+            let dx = b.x - a.x;
+            let dy = b.y - a.y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 0)
+            {
+                let nx = dx / dist;
+                let ny = dy / dist;
+
+                if (dist < 40)
+                {
+                    a.vx -= nx * 0.05;
+                    a.vy -= ny * 0.05;
+                }
+                else if (dist < 150)
+                {
+                    let attractionStrength = a.compassion * 0.001;
+                    a.vx += nx * attractionStrength;
+                    a.vy += ny * attractionStrength;
+                }
+
+                if (dist < 60)
+                {
+                    a.excitement = Math.min(100, a.excitement + 0.5);
+                    b.excitement = Math.min(100, b.excitement + 0.5);
+                    a.compassion = Math.min(100, a.compassion + 0.05);
+                    b.compassion = Math.min(100, b.compassion + 0.05);
+                }
+                else
+                {
+                    a.excitement = Math.max(0, a.excitement - 0.1);
+                    b.excitement = Math.max(0, b.excitement - 0.1);
+                }
+            }
+        }
+    }
+
+    // Phase 2: Movement & Boundaries
+    for (let i = 0; i < len; i++)
+    {
+        let a = catsData[i];
+
+        a.x += a.vx;
+        a.y += a.vy;
+
+        if (a.x < 0 || a.x > 760) a.vx *= -1;
+        if (a.y < 0 || a.y > 560) a.vy *= -1;
+
+        if (a.x < 0) a.x = 0;
+        if (a.y < 0) a.y = 0;
+        if (a.x > 760) a.x = 760;
+        if (a.y > 560) a.y = 560;
+    }
+}
+
+function renderSystem()
+{
+    // Sync the visual DOM nodes to the Data array
+    for (let i = 0; i < catsData.length; i++)
+    {
+        let data = catsData[i];
+        let ui = catsUI[i];
+
+        ui.circle.style.left = data.x + "px";
+        ui.circle.style.top = data.y + "px";
+
+        ui.nameLabel.style.left = data.x + "px";
+        ui.nameLabel.style.top = (data.y - 35) + "px";
+
+        ui.compassionBar.style.width = data.compassion + "px";
+        ui.compassionBar.style.left = data.x + "px";
+        ui.compassionBar.style.top = (data.y - 10) + "px";
+
+        ui.excitementBar.style.width = data.excitement + "px";
+        ui.excitementBar.style.left = data.x + "px";
+        ui.excitementBar.style.top = (data.y - 20) + "px";
+    }
+}
+
+function whenLoaded()
+{
+    makeInterface();
+
+    createEntity("Mittens", 100, 100, "orange");
+    createEntity("Shadow", 300, 300, "blue");
+    createEntity("Snowball", 500, 200, "purple");
+
+    function loop()
+    {
+        physicsSystem(); // Crunch the numbers
+        renderSystem();  // Update the screen
+        
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+}
+
+</script>
+
+</head>
+
+<body onload="whenLoaded()">
+
+</body>
+
+</html>
+

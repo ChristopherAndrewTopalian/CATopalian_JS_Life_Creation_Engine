@@ -1,0 +1,227 @@
+<!-- Dedicated to God the Father -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Life_Creation_Engine.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title> CATopalian JS Life Creation Engine </title>
+
+<meta charset = 'UTF-8'>
+
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+
+body
+{
+    background-color: rgb(30, 30, 30);
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+</style>
+
+<script>
+
+class Cat
+{
+    constructor(container, name, x, y, color)
+    {
+        this.container = container;
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.color = color;
+        this.health = 100;
+        this.compassion = 10; // baseline compassion
+        this.excitement = 0;  // rises when near
+
+        // cat circle (node)
+        this.circle = document.createElement("div");
+        this.circle.style.position = "absolute";
+        this.circle.style.width = "40px";
+        this.circle.style.height = "40px";
+        this.circle.style.borderRadius = "50%";
+        this.circle.style.backgroundColor = color;
+        this.container.appendChild(this.circle);
+
+        // name label
+        this.nameLabel = document.createElement("div");
+        this.nameLabel.style.position = "absolute";
+        this.nameLabel.style.color = "white";
+        this.nameLabel.style.fontFamily = "Arial";
+        this.nameLabel.style.fontSize = "12px";
+        this.nameLabel.style.textAlign = "center";
+        this.nameLabel.style.width = "40px"; // Matches the node width to center text
+        this.nameLabel.textContent = this.name;
+        this.container.appendChild(this.nameLabel);
+
+        // compassion bar
+        this.compassionBar = document.createElement("div");
+        this.compassionBar.style.position = "absolute";
+        this.compassionBar.style.height = "6px";
+        this.compassionBar.style.backgroundColor = "pink";
+        this.container.appendChild(this.compassionBar);
+
+        // excitement bar
+        this.excitementBar = document.createElement("div");
+        this.excitementBar.style.position = "absolute";
+        this.excitementBar.style.height = "6px";
+        this.excitementBar.style.backgroundColor = "yellow";
+        this.container.appendChild(this.excitementBar);
+
+        this.updatePosition();
+    }
+
+    updatePosition()
+    {
+        this.circle.style.left = this.x + "px";
+        this.circle.style.top = this.y + "px";
+
+        // Place the name label floating above the bars
+        this.nameLabel.style.left = this.x + "px";
+        this.nameLabel.style.top = (this.y - 35) + "px";
+
+        this.compassionBar.style.width = this.compassion + "px";
+        this.compassionBar.style.left = this.x + "px";
+        this.compassionBar.style.top = (this.y - 10) + "px";
+
+        this.excitementBar.style.width = this.excitement + "px";
+        this.excitementBar.style.left = this.x + "px";
+        this.excitementBar.style.top = (this.y - 20) + "px";
+    }
+
+    move()
+    {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // keep inside container bounds
+        if (this.x < 0 || this.x > 760) this.vx *= -1;
+        if (this.y < 0 || this.y > 560) this.vy *= -1;
+
+        if (this.x < 0) this.x = 0;
+        if (this.y < 0) this.y = 0;
+        if (this.x > 760) this.x = 760;
+        if (this.y > 560) this.y = 560;
+
+        this.updatePosition();
+    }
+
+    interactWith(otherCat)
+    {
+        let dx = otherCat.x - this.x;
+        let dy = otherCat.y - this.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > 0)
+        {
+            let nx = dx / dist;
+            let ny = dy / dist;
+
+            // attraction/repulsion logic
+            if (dist < 40)
+            {
+                // too close → repel
+                this.vx -= nx * 0.05;
+                this.vy -= ny * 0.05;
+            }
+            else if (dist < 150)
+            {
+                // close but not too close → attract, scaled by compassion
+                let attractionStrength = this.compassion * 0.001;
+                this.vx += nx * attractionStrength;
+                this.vy += ny * attractionStrength;
+            }
+
+            // excitement rises when near
+            if (dist < 60)
+            {
+                this.excitement = Math.min(100, this.excitement + 0.5);
+                otherCat.excitement = Math.min(100, otherCat.excitement + 0.5);
+
+                this.compassion = Math.min(100, this.compassion + 0.05);
+                otherCat.compassion = Math.min(100, otherCat.compassion + 0.05);
+            }
+            else
+            {
+                this.excitement = Math.max(0, this.excitement - 0.1);
+                otherCat.excitement = Math.max(0, otherCat.excitement - 0.1);
+            }
+        }
+    }
+}
+
+let container;
+let cats = [];
+
+function makeInterface()
+{
+    container = document.createElement("div");
+    container.style.position = "relative";
+    container.style.width = "800px";
+    container.style.height = "600px";
+    container.style.border = "2px solid white";
+    container.style.backgroundColor = "black";
+    document.body.appendChild(container);
+}
+
+function makeCat(name, x, y, color)
+{
+    let cat = new Cat(container, name, x, y, color);
+    cats.push(cat);
+    return cat;
+}
+
+function whenLoaded()
+{
+    makeInterface();
+
+    // create cats with names
+    makeCat("Mittens", 100, 100, "orange");
+    makeCat("Shadow", 300, 300, "blue");
+    makeCat("Snowball", 500, 200, "purple");
+
+    function loop()
+    {
+        // Phase 1: Calculate forces and interactions
+        for (let i = 0; i < cats.length; i++)
+        {
+            for (let j = i + 1; j < cats.length; j++)
+            {
+                cats[i].interactWith(cats[j]);
+            }
+        }
+
+        // Phase 2: Apply movement and update positions
+        for (let i = 0; i < cats.length; i++)
+        {
+            cats[i].move();
+        }
+
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+}
+
+</script>
+
+</head>
+
+<body onload="whenLoaded()">
+
+</body>
+
+</html>
+

@@ -1,0 +1,207 @@
+<!-- Dedicated to God the Father -->
+<!-- All Rights Reserved Christopher Andrew Topalian Copyright 2000-2026 -->
+<!-- https://github.com/ChristopherTopalian -->
+<!-- https://github.com/ChristopherAndrewTopalian -->
+<!-- CATopalian_JS_Life_Creation_Engine.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title> CATopalian JS Life Creation Engine </title>
+
+<meta charset = 'UTF-8'>
+
+<meta name = 'viewport' content = 'width = device-width, initial-scale = 1.0'>
+
+<style>
+body
+{
+    background-color: rgb(30, 30, 30);
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+</style>
+
+<script>
+
+class Cat
+{
+    constructor(container, name, x, y, color)
+    {
+        this.container = container;
+        this.name = name;
+        this.x = x;
+        this.y = y;
+
+        // initial velocity
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+
+        this.color = color;
+        this.health = 100;
+        this.compassion = 0;
+
+        // cat circle
+        this.circle = document.createElement("div");
+        this.circle.style.position = "absolute";
+        this.circle.style.width = "40px";
+        this.circle.style.height = "40px";
+        this.circle.style.borderRadius = "50%";
+        this.circle.style.backgroundColor = color;
+        this.container.appendChild(this.circle);
+
+        // name label
+        this.nameLabel = document.createElement("div");
+        this.nameLabel.style.position = "absolute";
+        this.nameLabel.style.color = "white";
+        this.nameLabel.style.fontFamily = "Arial";
+        this.nameLabel.style.fontSize = "12px";
+        this.nameLabel.style.textAlign = "center";
+        this.nameLabel.style.width = "40px"; // Matches cat width to center text easily
+        this.nameLabel.textContent = this.name;
+        this.container.appendChild(this.nameLabel);
+
+        // health bar
+        this.healthBar = document.createElement("div");
+        this.healthBar.style.position = "absolute";
+        this.healthBar.style.height = "6px";
+        this.healthBar.style.backgroundColor = "red";
+        this.container.appendChild(this.healthBar);
+
+        // compassion bar
+        this.compassionBar = document.createElement("div");
+        this.compassionBar.style.position = "absolute";
+        this.compassionBar.style.height = "6px";
+        this.compassionBar.style.backgroundColor = "pink";
+        this.container.appendChild(this.compassionBar);
+
+        this.updatePosition();
+    }
+
+    updatePosition()
+    {
+        this.circle.style.left = this.x + "px";
+        this.circle.style.top = this.y + "px";
+
+        // Place the name label floating above the bars
+        this.nameLabel.style.left = this.x + "px";
+        this.nameLabel.style.top = (this.y - 35) + "px";
+
+        this.healthBar.style.width = this.health + "px";
+        this.healthBar.style.left = this.x + "px";
+        this.healthBar.style.top = (this.y - 10) + "px";
+
+        this.compassionBar.style.width = this.compassion + "px";
+        this.compassionBar.style.left = this.x + "px";
+        this.compassionBar.style.top = (this.y - 20) + "px";
+    }
+
+    move()
+    {
+        // random drift adjustment
+        this.vx += (Math.random() - 0.5) * 0.1;
+        this.vy += (Math.random() - 0.5) * 0.1;
+
+        // limit velocity
+        if (this.vx > 2) this.vx = 2;
+        if (this.vx < -2) this.vx = -2;
+        if (this.vy > 2) this.vy = 2;
+        if (this.vy < -2) this.vy = -2;
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // keep inside container bounds
+        if (this.x < 0 || this.x > 760) this.vx *= -1;
+        if (this.y < 0 || this.y > 560) this.vy *= -1;
+
+        if (this.x < 0) this.x = 0;
+        if (this.y < 0) this.y = 0;
+        if (this.x > 760) this.x = 760;
+        if (this.y > 560) this.y = 560;
+
+        this.updatePosition();
+    }
+
+    adjustCompassion(otherCat)
+    {
+        let dx = this.x - otherCat.x;
+        let dy = this.y - otherCat.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 60)
+        {
+            this.compassion = Math.min(100, this.compassion + 0.5);
+            otherCat.compassion = Math.min(100, otherCat.compassion + 0.5);
+        }
+        else
+        {
+            this.compassion = Math.max(0, this.compassion - 0.05);
+            otherCat.compassion = Math.max(0, otherCat.compassion - 0.05);
+        }
+    }
+}
+
+let container;
+let cats = [];
+
+function makeInterface()
+{
+    container = document.createElement("div");
+    container.style.position = "relative";
+    container.style.width = "800px";
+    container.style.height = "600px";
+    container.style.border = "2px solid white";
+    container.style.backgroundColor = "black";
+    document.body.appendChild(container);
+}
+
+function makeCat(name, x, y, color)
+{
+    let cat = new Cat(container, name, x, y, color);
+    cats.push(cat);
+    return cat;
+}
+
+function whenLoaded()
+{
+    makeInterface();
+
+    // create cats with names
+    makeCat("Mittens", 100, 100, "orange");
+    makeCat("Shadow", 300, 300, "blue");
+    makeCat("Snowball", 500, 200, "purple");
+
+    function loop()
+    {
+        for (let i = 0; i < cats.length; i++)
+        {
+            cats[i].move();
+
+            for (let j = i + 1; j < cats.length; j++)
+            {
+                cats[i].adjustCompassion(cats[j]);
+            }
+        }
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+}
+
+</script>
+
+</head>
+
+<body onload="whenLoaded()">
+
+</body>
+
+</html>
+
