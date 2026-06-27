@@ -3,7 +3,15 @@ This JavaScript app teaches incrementally how to simulate life with motion.
 
 ---
 
+![001](src/media/textures/screenshots/001.png)
 
+![002](src/media/textures/screenshots/002.png)
+
+![003](src/media/textures/screenshots/003.png)
+
+![004](src/media/textures/screenshots/004.png)
+
+![005](src/media/textures/screenshots/005.png)
 
 ---
 
